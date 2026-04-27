@@ -13,6 +13,7 @@ import app from './app';
 import { SocketServer } from './SocketServer';
 import { RealTimeNotificationService } from './services/NotificationService';
 import RealTimeAnalyticsService from './services/RealTimeAnalyticsService';
+import { MemoryMonitor } from './MemoryMonitor';
 import { logger } from './middleware/logger';
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -35,6 +36,10 @@ notificationService.initialize();
 
 const analyticsService = new RealTimeAnalyticsService();
 analyticsService.initialize();
+
+// Initialize Memory Monitor
+const memoryMonitor = MemoryMonitor.getInstance();
+logger.info('🧠 Memory monitoring system initialized');
 
 // Expose connection stats on the health endpoint by patching the app's
 // /health handler is not practical here, so we attach a dedicated endpoint.
@@ -72,6 +77,10 @@ function shutdown(signal: string): void {
   // Disconnect all WebSocket clients cleanly
   socketServer.shutdown();
   analyticsService.stopBroadcast();
+
+// Shutdown Memory Monitor
+  memoryMonitor.shutdown();
+  logger.info('[server] Memory monitor shutdown');
 
   // Give in-flight requests 10 s to complete before forcing exit
   setTimeout(() => {

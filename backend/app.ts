@@ -25,6 +25,7 @@ import analyticsService from './services/analytics';
 import { appConfig } from './src/config/environment';
 import ConnectionPoolMonitor from './databases/monitoring/ConnectionPoolMonitor';
 import DatabaseHealthCheck from './databases/monitoring/DatabaseHealthCheck';
+import { MemoryMonitor } from './MemoryMonitor';
 import { UserRole } from '@prisma/client';
 
 const app = express();
@@ -163,6 +164,70 @@ app.get('/api/monitoring/db-pools', apiKeyAuth, async (_req, res) => {
 app.get('/api/monitoring/db-health', apiKeyAuth, async (_req, res) => {
   const databaseHealth = await DatabaseHealthCheck.getHealthReport();
   res.json({ status: 'ok', databaseHealth });
+});
+
+// Memory monitoring endpoints
+app.get('/api/monitoring/memory', apiKeyAuth, (_req, res) => {
+  const memoryMonitor = MemoryMonitor.getInstance();
+  const healthMetrics = memoryMonitor.getHealthMetrics();
+  const memoryTrend = memoryMonitor.getMemoryTrend();
+  const connectionTrend = memoryMonitor.getConnectionTrend();
+  const leakDetection = memoryMonitor.detectMemoryLeaks();
+
+  res.json({
+    status: 'ok',
+    healthMetrics,
+    memoryTrend,
+    connectionTrend,
+    leakDetection,
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.post('/api/monitoring/memory/cleanup', apiKeyAuth, (_req, res) => {
+  const memoryMonitor = MemoryMonitor.getInstance();
+  memoryMonitor.forceCleanup();
+  
+  res.json({
+    status: 'ok',
+    message: 'Memory cleanup completed',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/monitoring/memory/alerts', apiKeyAuth, (_req, res) => {
+  const memoryMonitor = MemoryMonitor.getInstance();
+  const alerts = memoryMonitor.getAlerts();
+  const leakDetection = memoryMonitor.detectMemoryLeaks();
+  
+  res.json({
+    status: 'ok',
+    alerts,
+    leakDetection,
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/monitoring/memory/report', apiKeyAuth, (_req, res) => {
+  const memoryMonitor = MemoryMonitor.getInstance();
+  const report = memoryMonitor.generateMemoryReport();
+  
+  res.json({
+    status: 'ok',
+    report,
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.delete('/api/monitoring/memory/alerts', apiKeyAuth, (_req, res) => {
+  const memoryMonitor = MemoryMonitor.getInstance();
+  memoryMonitor.clearAlerts();
+  
+  res.json({
+    status: 'ok',
+    message: 'Memory alerts cleared',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // 11. API version discovery (no auth required for discovery)
