@@ -6,9 +6,19 @@
 import helmet from 'helmet';
 import cors, { CorsOptions } from 'cors';
 import { Express } from 'express';
+<<<<<<< HEAD:backend/src/config/security.ts
+=======
+import crypto from 'crypto';
+>>>>>>> fix/caching-error-handling-performance:src/config/security.ts
 import { securityConfig } from '../security/SecurityConfig';
 
 export const configureSecurity = (app: Express): void => {
+  // Generate nonce for CSP
+  app.use((req, res, next) => {
+    res.locals.nonce = crypto.randomBytes(16).toString('base64');
+    next();
+  });
+
   // 1. Set security HTTP headers with custom configuration
   if (securityConfig.compliance.strictHeaders) {
     app.use(
@@ -16,6 +26,42 @@ export const configureSecurity = (app: Express): void => {
         contentSecurityPolicy: {
           directives: {
             ...securityConfig.compliance.cspDirectives,
+            'script-src': [
+              ...(securityConfig.compliance.cspDirectives['script-src'] || ["'self'"]),
+              "'unsafe-inline'",
+              "'unsafe-eval'",
+              "https://www.googletagmanager.com",
+              "https://www.google-analytics.com",
+              "https://cdn.jsdelivr.net",
+              "https://unpkg.com",
+              (req, res) => `'nonce-${res.locals.nonce}'`
+            ],
+            'style-src': [
+              ...(securityConfig.compliance.cspDirectives['style-src'] || ["'self'"]),
+              "'unsafe-inline'",
+              "https://fonts.googleapis.com",
+              "https://cdn.jsdelivr.net",
+              "https://unpkg.com"
+            ],
+            'img-src': [
+              ...(securityConfig.compliance.cspDirectives['img-src'] || ["'self'"]),
+              "data:",
+              "https:",
+              "blob:"
+            ],
+            'font-src': [
+              ...(securityConfig.compliance.cspDirectives['font-src'] || ["'self'"]),
+              "https://fonts.gstatic.com",
+              "https://cdn.jsdelivr.net",
+              "data:"
+            ],
+            'connect-src': [
+              ...(securityConfig.compliance.cspDirectives['connect-src'] || ["'self'"]),
+              "https://www.google-analytics.com",
+              "https://api.stellar.org",
+              "https://horizon.stellar.org",
+              process.env.API_URL || 'http://localhost:3000'
+            ]
           },
         },
         hsts: {
@@ -31,11 +77,66 @@ export const configureSecurity = (app: Express): void => {
         referrerPolicy: {
           policy: 'strict-origin-when-cross-origin',
         },
+        crossOriginEmbedderPolicy: false,
       })
     );
   } else {
-    // Basic helmet configuration
-    app.use(helmet());
+    // Basic helmet configuration with nonce support
+    app.use(helmet({
+      contentSecurityPolicy: {
+        directives: {
+          'default-src': ["'self'"],
+          'script-src': [
+            "'self'",
+            "'unsafe-inline'",
+            "'unsafe-eval'",
+            "https://www.googletagmanager.com",
+            "https://www.google-analytics.com",
+            "https://cdn.jsdelivr.net",
+            "https://unpkg.com",
+            (req, res) => `'nonce-${res.locals.nonce}'`
+          ],
+          'style-src': [
+            "'self'",
+            "'unsafe-inline'",
+            "https://fonts.googleapis.com",
+            "https://cdn.jsdelivr.net",
+            "https://unpkg.com"
+          ],
+          'img-src': [
+            "'self'",
+            "data:",
+            "https:",
+            "blob:"
+          ],
+          'font-src': [
+            "'self'",
+            "https://fonts.gstatic.com",
+            "https://cdn.jsdelivr.net",
+            "data:"
+          ],
+          'connect-src': [
+            "'self'",
+            "https://www.google-analytics.com",
+            "https://api.stellar.org",
+            "https://horizon.stellar.org",
+            process.env.API_URL || 'http://localhost:3000'
+          ],
+          'media-src': ["'self'"],
+          'object-src': ["'none'"],
+          'base-uri': ["'self'"],
+          'form-action': ["'self'"],
+          'frame-ancestors': ["'none'"],
+          'upgrade-insecure-requests': []
+        }
+      },
+      crossOriginEmbedderPolicy: false,
+      hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true
+      }
+    }));
   }
 
   // 2. CORS configuration with dynamic origins
@@ -71,6 +172,7 @@ export const configureSecurity = (app: Express): void => {
       'x-request-id',
       'Accept',
       'Accept-Language',
+      'X-Requested-With'
     ],
     exposedHeaders: [
       'X-RateLimit-Limit',
@@ -78,6 +180,8 @@ export const configureSecurity = (app: Express): void => {
       'X-RateLimit-Reset',
       'X-RateLimit-Tier',
       'X-RateLimit-Burst',
+      'X-Total-Count',
+      'X-Page-Count'
     ],
     credentials: securityConfig.compliance.corsCredentials,
     maxAge: 86400, // 24 hours
@@ -108,7 +212,7 @@ export const configureSecurity = (app: Express): void => {
     // Permissions Policy
     res.setHeader(
       'Permissions-Policy',
-      'camera=(), microphone=(), geolocation=(), payment=()'
+      'geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=()'
     );
     
     // Cross-Origin policies
@@ -125,7 +229,7 @@ export const configureSecurity = (app: Express): void => {
     next();
   });
 
-  console.log('✅ Enhanced security configuration applied');
+  console.log('✅ Enhanced security configuration applied with CSP nonce support');
 };
 
 export default configureSecurity;
