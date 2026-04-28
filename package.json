@@ -1,0 +1,15 @@
+{
+  "name": "nepa-monorepo",
+  "version": "1.0.0",
+  "description": "NEPA Monorepo - Backend services",
+  "private": true,
+  "workspaces": [
+    "backend"
+  ],
+  "scripts": {
+    "test": "cd backend && npm test",
+    "lint": "cd backend && npm run lint",
+    "build": "cd backend && npm run build",
+    "dev": "cd backend && npm run dev"
+  }
+}
