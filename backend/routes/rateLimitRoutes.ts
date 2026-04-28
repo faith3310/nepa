@@ -8,6 +8,17 @@ import {
   userProfileHandler,
   apiKeyRateLimiter
 } from '../middleware/advancedRateLimiter';
+import {
+  globalApiLimiter,
+  strictApiLimiter,
+  paymentEndpointLimiter,
+  authEndpointLimiter,
+  userBasedRateLimiter,
+  ipBasedRateLimiter,
+  progressiveRateLimiter,
+  rateLimitBreachMonitor,
+  getRateLimitAnalytics as getComprehensiveAnalytics
+} from '../middleware/comprehensiveRateLimiter';
 import { 
   getRateLimitAnalytics,
   getBreachHistory,
@@ -39,6 +50,16 @@ export function setupRateLimitRoutes(app: any) {
   app.use('/api', advancedRateLimiter);
   app.use('/api', burstHandler);
   app.use('/api', apiKeyRateLimiter);
+
+  // Apply comprehensive rate limiting middleware
+  app.use('/api', ipBasedRateLimiter);
+  app.use('/api', userBasedRateLimiter);
+  app.use('/api', rateLimitBreachMonitor);
+
+  // Apply specific rate limiters to endpoints
+  app.use('/api/auth', authEndpointLimiter);
+  app.use('/api/payment', paymentEndpointLimiter);
+  app.use('/api', strictApiLimiter);
 
   // Rate limiting analytics endpoints
   app.get('/api/rate-limit/analytics', apiKeyAuth, rateLimitAnalyticsHandler);

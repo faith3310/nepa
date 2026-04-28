@@ -26,6 +26,7 @@ import ConnectionPoolMonitor from './databases/monitoring/ConnectionPoolMonitor'
 import DatabaseHealthCheck from './databases/monitoring/DatabaseHealthCheck';
 import { MemoryMonitor } from './MemoryMonitor';
 import { UserRole } from '@prisma/client';
+import { errorHandler, getErrorStats, getErrorLogs } from './middleware/centralizedErrorHandler';
 import ConnectionPoolManager from './databases/ConnectionPoolManager';
 import { initializeCacheSystem } from './services/cache/CacheInitializer';
 
@@ -397,6 +398,24 @@ app.get('/api/analytics/export', apiKeyAuth, exportData);
 
 // 17. Export endpoints
 app.use('/api/export', exportRoutes);
+
+// 18. Centralized Error Handling endpoints
+app.get('/api/errors/stats', apiKeyAuth, (req, res) => {
+  res.json({ success: true, data: getErrorStats() });
+});
+
+app.get('/api/errors/logs', apiKeyAuth, (req, res) => {
+  const { limit = '50' } = req.query as { limit?: string };
+  res.json({ success: true, data: getErrorLogs(parseInt(limit.toString())) });
+});
+
+// Setup global error handling
+setupGlobalErrorHandling(app);
+
+// 19. Centralized error handler as fallback
+app.use(errorHandler);
+
+export default app;
 // Setup global error handling
 setupGlobalErrorHandling(app);
 
