@@ -1071,23 +1071,4 @@ export const updateNotificationPreferences = async (req: Request, res: Response)
  *           type: integer
  *           default: 100
  */
-export const getBreachHistory = async (req: Request, res: Response) => {
-  try {
-    const { limit = 100, offset = 0 } = req.query;
-
-    const breaches = await notificationService.getBreachHistory(parseInt(limit as string), parseInt(offset as string));
-
-    res.json({
-      success: true,
-      data: breaches,
-      count: breaches.length
-    });
-  } catch (error) {
-    console.error('Get breach history error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch breach history',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-};
+// Duplicate function removed - keeping the first declaration at line 119

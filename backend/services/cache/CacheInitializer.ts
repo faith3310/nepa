@@ -147,8 +147,8 @@ export class CacheInitializer {
       }
 
     } catch (error) {
-      result.errors.push(`Initialization error: ${error.message}`);
-      logger.error('Cache initialization error:', error);
+      result.errors.push(`Initialization error: ${(error as Error).message}`);
+      logger.error('Cache initialization error:', error as any);
     }
 
     return result;
@@ -171,7 +171,7 @@ export class CacheInitializer {
       logger.info('Redis cache manager initialized successfully');
       return true;
     } catch (error) {
-      logger.error('Redis initialization error:', error);
+      logger.error('Redis initialization error:', error as any);
       return false;
     }
   }
@@ -203,7 +203,7 @@ export class CacheInitializer {
       logger.info('Cache strategy initialized successfully');
       return true;
     } catch (error) {
-      logger.error('Cache strategy initialization error:', error);
+      logger.error('Cache strategy initialization error:', error as any);
       return false;
     }
   }
@@ -243,7 +243,7 @@ export class CacheInitializer {
       logger.info('Session cache service initialized successfully');
       return true;
     } catch (error) {
-      logger.error('Session cache initialization error:', error);
+      logger.error('Session cache initialization error:', error as any);
       return false;
     }
   }
@@ -281,7 +281,7 @@ export class CacheInitializer {
       logger.info('Microservices cache initialized successfully');
       return true;
     } catch (error) {
-      logger.error('Microservices cache initialization error:', error);
+      logger.error('Microservices cache initialization error:', error as any);
       return false;
     }
   }
@@ -302,7 +302,7 @@ export class CacheInitializer {
       logger.info('Cache monitoring initialized successfully');
       return true;
     } catch (error) {
-      logger.error('Cache monitoring initialization error:', error);
+      logger.error('Cache monitoring initialization error:', error as any);
       return false;
     }
   }
@@ -330,7 +330,7 @@ export class CacheInitializer {
       logger.info('Cache warmup service initialized successfully');
       return true;
     } catch (error) {
-      logger.error('Cache warmup initialization error:', error);
+      logger.error('Cache warmup initialization error:', error as any);
       return false;
     }
   }
@@ -373,7 +373,7 @@ export class CacheInitializer {
         issues
       };
     } catch (error) {
-      issues.push(`Health check error: ${error.message}`);
+      issues.push(`Health check error: ${(error as Error).message}`);
       return {
         healthy: false,
         issues
@@ -403,7 +403,7 @@ export class CacheInitializer {
         logger.info('Cache system shutdown completed');
         process.exit(0);
       } catch (error) {
-        logger.error('Error during cache system shutdown:', error);
+        logger.error('Error during cache system shutdown:', error as any);
         process.exit(1);
       }
     };
@@ -452,7 +452,7 @@ export class CacheInitializer {
         initialized: false,
         uptime: 0,
         services: {},
-        health: { healthy: false, error: error.message },
+        health: { healthy: false, error: (error as Error).message },
         config: {}
       };
     }
@@ -475,7 +475,7 @@ export class CacheInitializer {
       // Reinitialize
       return await this.initialize();
     } catch (error) {
-      logger.error('Cache reinitialization error:', error);
+      logger.error('Cache reinitialization error:', error as any);
       return {
         success: false,
         services: {
@@ -486,7 +486,7 @@ export class CacheInitializer {
           monitoring: false,
           microservices: false
         },
-        errors: [`Reinitialization error: ${error.message}`],
+        errors: [`Reinitialization error: ${(error as Error).message}`],
         warnings: [],
         metrics: {
           initializationTime: 0,

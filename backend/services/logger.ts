@@ -180,7 +180,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
   const correlationId = rTracer.id();
   
   logger.http('Request started', {
-    correlationId,
+    correlationId: (correlationId as string) || undefined,
     method: req.method,
     url: req.originalUrl,
     ip: req.ip,
@@ -193,7 +193,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
     const level = res.statusCode >= 400 ? 'warn' : 'http';
     
     logger[level]('Request completed', {
-      correlationId,
+      correlationId: (correlationId as string) || undefined,
       method: req.method,
       url: req.originalUrl,
       statusCode: res.statusCode,
@@ -206,7 +206,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
 
   res.on('error', (error) => {
     logger.logError(error, {
-      correlationId,
+      correlationId: (correlationId as string) || undefined,
       method: req.method,
       url: req.originalUrl,
       ip: req.ip,

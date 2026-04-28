@@ -3,14 +3,20 @@ import { Request, Response } from 'express';
 import RedisStore from 'rate-limit-redis';
 import Redis from 'ioredis';
 
+// Extend Request interface to include suspicious property
+declare global {
+  namespace Express {
+    interface Request {
+      suspicious?: boolean;
+    }
+  }
+}
+
 // Redis client for distributed rate limiting
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 
 // General API rate limiter
 export const apiLimiter = rateLimit({
-  store: new RedisStore({
-    sendCommand: (...args: string[]) => redis.call(...args),
-  }),
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
   message: {
@@ -28,9 +34,6 @@ export const apiLimiter = rateLimit({
 
 // Strict rate limiter for payment endpoints
 export const paymentLimiter = rateLimit({
-  store: new RedisStore({
-    sendCommand: (...args: string[]) => redis.call(...args),
-  }),
   windowMs: 5 * 60 * 1000, // 5 minutes
   max: 5, // Limit each IP to 5 payment requests per 5 minutes
   message: {
@@ -49,9 +52,6 @@ export const paymentLimiter = rateLimit({
 
 // Transaction frequency limiter
 export const transactionLimiter = rateLimit({
-  store: new RedisStore({
-    sendCommand: (...args: string[]) => redis.call(...args),
-  }),
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 20, // Limit each IP to 20 transactions per hour
   message: {
@@ -69,9 +69,6 @@ export const transactionLimiter = rateLimit({
 
 // Bruteforce protection for authentication endpoints
 export const authLimiter = rateLimit({
-  store: new RedisStore({
-    sendCommand: (...args: string[]) => redis.call(...args),
-  }),
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // Limit each IP to 10 auth attempts per 15 minutes
   message: {
@@ -91,7 +88,7 @@ export const ipRestriction = (req: Request, res: Response, next: Function) => {
   // Block known malicious IPs (in production, use a database or external service)
   const blockedIPs = process.env.BLOCKED_IPS?.split(',') || [];
   
-  if (blockedIPs.includes(clientIP)) {
+  if (clientIP && blockedIPs.includes(clientIP)) {
     return res.status(403).json({
       status: 403,
       error: 'Access denied'
@@ -110,9 +107,6 @@ export const ipRestriction = (req: Request, res: Response, next: Function) => {
 
 // Progressive rate limiting based on user behavior
 export const progressiveLimiter = rateLimit({
-  store: new RedisStore({
-    sendCommand: (...args: string[]) => redis.call(...args),
-  }),
   windowMs: 60 * 1000, // 1 minute
   max: (req: Request) => {
     // Adjust limit based on user behavior

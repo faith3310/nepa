@@ -51,13 +51,9 @@ class RedisCacheManager {
       password: config.password,
       db: config.db,
       keyPrefix: config.keyPrefix,
-      retryDelayOnFailover: config.retryDelayOnFailover,
       maxRetriesPerRequest: config.maxRetriesPerRequest,
       lazyConnect: config.lazyConnect,
-      retryDelayOnClusterDown: 300,
-      enableReadyCheck: false,
-      maxLoadingTimeout: 1000,
-      lazyConnect: true
+      enableReadyCheck: false
     });
 
     // Separate Redis client for pub/sub
@@ -120,7 +116,7 @@ class RedisCacheManager {
       const callbacks = this.invalidationCallbacks.get('global') || [];
       callbacks.forEach(callback => callback());
     } catch (error) {
-      logger.error('Cache invalidation error:', error);
+      logger.error('Cache invalidation error:', error as any);
     }
   }
 
@@ -157,7 +153,7 @@ class RedisCacheManager {
         return null;
       }
     } catch (error) {
-      logger.error(`Cache get error for key ${key}:`, error);
+      logger.error(`Cache get error for key ${key}:`, error as any);
       this.stats.misses++;
       return null;
     }
@@ -201,7 +197,7 @@ class RedisCacheManager {
       
       return false;
     } catch (error) {
-      logger.error(`Cache set error for key ${key}:`, error);
+      logger.error(`Cache set error for key ${key}:`, error as any);
       return false;
     }
   }
@@ -212,7 +208,7 @@ class RedisCacheManager {
       this.stats.deletes += result;
       return result > 0;
     } catch (error) {
-      logger.error(`Cache delete error for key ${key}:`, error);
+      logger.error(`Cache delete error for key ${key}:`, error as any);
       return false;
     }
   }
@@ -230,7 +226,7 @@ class RedisCacheManager {
       
       return keys.length;
     } catch (error) {
-      logger.error(`Cache invalidation error for tag ${tag}:`, error);
+      logger.error(`Cache invalidation error for tag ${tag}:`, error as any);
       return 0;
     }
   }
@@ -258,7 +254,7 @@ class RedisCacheManager {
       
       return 0;
     } catch (error) {
-      logger.error(`Cache pattern invalidation error for pattern ${pattern}:`, error);
+      logger.error(`Cache pattern invalidation error for pattern ${pattern}:`, error as any);
       return 0;
     }
   }
@@ -278,7 +274,7 @@ class RedisCacheManager {
       
       return { ...this.stats };
     } catch (error) {
-      logger.error('Cache stats error:', error);
+      logger.error('Cache stats error:', error as any);
       return this.stats;
     }
   }
@@ -297,7 +293,7 @@ class RedisCacheManager {
       };
       return true;
     } catch (error) {
-      logger.error('Cache flush error:', error);
+      logger.error('Cache flush error:', error as any);
       return false;
     }
   }
@@ -308,7 +304,7 @@ class RedisCacheManager {
       const message = JSON.stringify({ keys, tags });
       await this.client.publish('cache:invalidation', message);
     } catch (error) {
-      logger.error('Cache broadcast invalidation error:', error);
+      logger.error('Cache broadcast invalidation error:', error as any);
     }
   }
 
@@ -338,7 +334,7 @@ class RedisCacheManager {
       await this.client.del(testKey);
       return result === 'ok';
     } catch (error) {
-      logger.error('Cache health check failed:', error);
+      logger.error('Cache health check failed:', error as any);
       return false;
     }
   }

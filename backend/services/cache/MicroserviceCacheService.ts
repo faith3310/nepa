@@ -64,7 +64,7 @@ export class MicroserviceCacheService {
       logger.debug(`Cached payment history for user ${userId}, page ${page}`);
       return result;
     } catch (error) {
-      logger.error('Payment history cache error:', error);
+      logger.error('Payment cache error:', error as any);
       return false;
     }
   }
@@ -97,7 +97,7 @@ export class MicroserviceCacheService {
       logger.debug(`Cached ${payments.length} recent payments for user ${userId}`);
       return result;
     } catch (error) {
-      logger.error('Recent payments cache error:', error);
+      logger.error('Recent payments cache error:', error as any);
       return false;
     }
   }
@@ -134,7 +134,7 @@ export class MicroserviceCacheService {
 
       logger.debug(`Invalidated payment cache for user ${userId}`);
     } catch (error) {
-      logger.error('Payment cache invalidation error:', error);
+      logger.error('Payment cache invalidation error:', error as any);
     }
   }
 
@@ -155,7 +155,7 @@ export class MicroserviceCacheService {
       logger.debug(`Cached ${bills.length} bills for user ${userId}`);
       return result;
     } catch (error) {
-      logger.error('User bills cache error:', error);
+      logger.error('User bills cache error:', error as any);
       return false;
     }
   }
@@ -187,7 +187,7 @@ export class MicroserviceCacheService {
       logger.debug(`Cached bill status for ${billId}`);
       return result;
     } catch (error) {
-      logger.error('Bill status cache error:', error);
+      logger.error('Bill status cache error:', error as any);
       return false;
     }
   }
@@ -224,7 +224,7 @@ export class MicroserviceCacheService {
 
       logger.debug(`Invalidated billing cache for user ${userId}`);
     } catch (error) {
-      logger.error('Billing cache invalidation error:', error);
+      logger.error('Billing cache invalidation error:', error as any);
     }
   }
 
@@ -245,7 +245,7 @@ export class MicroserviceCacheService {
       logger.debug(`Cached webhook config for ${webhookId}`);
       return result;
     } catch (error) {
-      logger.error('Webhook config cache error:', error);
+      logger.error('Webhook config cache error:', error as any);
       return false;
     }
   }
@@ -277,7 +277,7 @@ export class MicroserviceCacheService {
       logger.debug(`Cached ${webhooks.length} webhooks for user ${userId}`);
       return result;
     } catch (error) {
-      logger.error('User webhooks cache error:', error);
+      logger.error('User webhooks cache error:', error as any);
       return false;
     }
   }
@@ -309,7 +309,7 @@ export class MicroserviceCacheService {
       logger.debug(`Cached webhook events for ${webhookId}, page ${page}`);
       return result;
     } catch (error) {
-      logger.error('Webhook events cache error:', error);
+      logger.error('Webhook events cache error:', error as any);
       return false;
     }
   }
@@ -347,7 +347,7 @@ export class MicroserviceCacheService {
 
       logger.debug(`Invalidated webhook cache for user ${userId}`);
     } catch (error) {
-      logger.error('Webhook cache invalidation error:', error);
+      logger.error('Webhook cache invalidation error:', error as any);
     }
   }
 
@@ -372,7 +372,7 @@ export class MicroserviceCacheService {
       logger.debug(`Cached dashboard analytics for user ${userId}, timeframe ${timeframe}`);
       return result;
     } catch (error) {
-      logger.error('Dashboard analytics cache error:', error);
+      logger.error('Dashboard analytics cache error:', error as any);
       return false;
     }
   }
@@ -405,7 +405,7 @@ export class MicroserviceCacheService {
       logger.debug(`Cached revenue analytics for period ${period}`);
       return result;
     } catch (error) {
-      logger.error('Revenue analytics cache error:', error);
+      logger.error('Revenue analytics cache error:', error as any);
       return false;
     }
   }
@@ -437,7 +437,7 @@ export class MicroserviceCacheService {
       logger.debug(`Cached user growth analytics for period ${period}`);
       return result;
     } catch (error) {
-      logger.error('User growth analytics cache error:', error);
+      logger.error('User growth analytics cache error:', error as any);
       return false;
     }
   }
@@ -471,7 +471,7 @@ export class MicroserviceCacheService {
 
       logger.debug(`Invalidated analytics cache${userId ? ` for user ${userId}` : ''}`);
     } catch (error) {
-      logger.error('Analytics cache invalidation error:', error);
+      logger.error('Analytics cache invalidation error:', error as any);
     }
   }
 
@@ -492,7 +492,7 @@ export class MicroserviceCacheService {
       logger.debug(`Cached ${providers.length} utility providers`);
       return result;
     } catch (error) {
-      logger.error('Utility providers cache error:', error);
+      logger.error('Utility providers cache error:', error as any);
       return false;
     }
   }
@@ -521,7 +521,7 @@ export class MicroserviceCacheService {
       logger.debug(`Cached ${types.length} utility types`);
       return result;
     } catch (error) {
-      logger.error('Utility types cache error:', error);
+      logger.error('Utility types cache error:', error as any);
       return false;
     }
   }
@@ -545,7 +545,7 @@ export class MicroserviceCacheService {
       await this.cacheStrategy.invalidate('', {}, ['utility', 'static']);
       logger.debug('Invalidated utility cache');
     } catch (error) {
-      logger.error('Utility cache invalidation error:', error);
+      logger.error('Utility cache invalidation error:', error as any);
     }
   }
 
@@ -568,7 +568,7 @@ export class MicroserviceCacheService {
         const success = await this.cacheStrategy.set(pattern, params, data);
         if (success) cached++;
       } catch (error) {
-        logger.error(`Batch cache error for pattern ${pattern}:`, error);
+        logger.error(`Batch cache error for pattern ${pattern}:`, error as any);
       }
     });
 
@@ -610,16 +610,14 @@ export class MicroserviceCacheService {
 
       // Populate metrics for each service
       Object.keys(stats).forEach(service => {
-        stats[service].patterns.forEach(pattern => {
-          if (metrics[pattern]) {
-            stats[service].metrics[pattern] = metrics[pattern];
-          }
+        (stats as any)[service].patterns.forEach((pattern: any) => {
+          (stats as any)[service].metrics[pattern] = metrics[pattern];
         });
       });
 
       return stats;
     } catch (error) {
-      logger.error('Microservices cache stats error:', error);
+      logger.error('Microservices cache stats error:', error as any);
       return {};
     }
   }

@@ -323,7 +323,7 @@ export class ConnectionPoolManager {
     ];
 
     await Promise.all(
-      clients.map(client => client.$disconnect().catch(console.error))
+      clients.map(client => client ? (client as any).$disconnect().catch(console.error) : Promise.resolve())
     );
 
     console.log('🧹 Connection pool manager cleaned up');
