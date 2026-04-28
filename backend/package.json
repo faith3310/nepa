@@ -67,13 +67,14 @@
     "useragent": "^2.3.0",
     "@aws-sdk/client-s3": "^3.400.0",
     "@aws-sdk/client-cloudwatch": "^3.400.0",
-    "@aws-sdk/client-es": "^3.400.0",
+    "@aws-sdk/client-ses": "^3.400.0",
     "rss": "^1.2.2",
     "csv-writer": "^1.6.0",
     "xlsx": "^0.18.5",
     "jspdf": "^2.5.1",
     "html2canvas": "^1.4.1",
-    "exceljs": "^4.4.0"
+    "exceljs": "^4.4.0",
+    "rss": "^1.2.2"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
@@ -99,7 +100,6 @@
     "@types/geoip-lite": "^1.4.2",
     "@types/node-cron": "^3.0.8",
     "@types/useragent": "^2.3.1",
-    "@types/isomorphic-dompurify": "^2.0.0",
     "jest-environment-jsdom": "^29.7.0",
     "typescript": "^5.2.2",
     "prisma": "^5.6.0",
@@ -119,12 +119,15 @@
     "@types/web3": "^1.2.2",
     "@types/rss": "^0.0.32",
     "@types/xlsx": "^0.0.36",
+    "@types/isomorphic-dompurify": "^2.0.0",
     "cypress": "^13.6.0",
     "cypress-visual-regression": "^5.0.0",
     "cypress-mochawesome-reporter": "^3.6.0",
     "cypress-xpath": "^2.0.1",
     "playwright": "^1.40.0",
-    "@playwright/test": "^1.40.0"
+    "@playwright/test": "^1.40.0",
+    "@types/web3": "^1.2.2",
+    "@types/rss": "^0.0.32"
   },
   "scripts": {
     "dev": "ts-node server.ts",
@@ -186,4 +189,10 @@
     "audit:generate": "npx prisma generate --schema=./databases/audit-service/schema.prisma",
     "audit:migrate": "npx prisma db push --schema=./databases/audit-service/schema.prisma",
     "audit:cleanup": "ts-node -e \"import('./services/AuditCleanupService').then(m => m.auditCleanupService.performCleanup())\"",
-    "aud
+    "audit:archive": "ts-node -e \"import('./services/AuditCleanupService').then(m => m.auditCleanupService.performArchival())\"",
+    "audit:health": "ts-node -e \"import('./databases/clients/auditClient').then(m => m.default.healthCheck().then(h => console.log('Audit DB Health:', h)))\"",
+    "audit:stats": "ts-node -e \"import('./services/AuditService').then(m => m.auditService.searchAuditLogs({limit: 1}).then(r => console.log('Total Audit Logs:', r.total)))\"",
+    "test:audit": "ts-node scripts/test-audit-system.ts",
+    "check:audit": "ts-node scripts/check-audit-setup.ts"
+  }
+}
