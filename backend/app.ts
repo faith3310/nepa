@@ -39,6 +39,8 @@ import { AuditAction } from './services/AuditService';
 import { UserRole } from './middleware/authentication';
 import { errorHandler, getErrorStats, getErrorLogs } from './middleware/centralizedErrorHandler';
 import ConnectionPoolManager from './databases/ConnectionPoolManager';
+import scheduledPaymentRoutes from './routes/scheduledPaymentRoutes';
+import { scheduledPaymentService } from './services/ScheduledPaymentService';
 import { initializeCacheSystem } from './services/cache/CacheInitializer';
 
 const app = express();
@@ -438,6 +440,13 @@ app.get('/api/errors/logs', apiKeyAuth, (req, res) => {
   const { limit = '50' } = req.query as { limit?: string };
   res.json({ success: true, data: getErrorLogs(parseInt(limit.toString())) });
 });
+
+
+// Work #120 - Scheduled Payment Routes
+app.use('/api/scheduled-payments', scheduledPaymentRoutes);
+
+// Start the scheduled payment cron job
+scheduledPaymentService.startScheduler();
 
 // Setup global error handling
 setupGlobalErrorHandling(app);
