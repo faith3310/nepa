@@ -46,11 +46,18 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
 
-    - name: Install dependencies
-      run: |
-        cd api-testing
-        npm install
+    - name: Copy test environment
+      run: cp .env.test backend/.env
+
+    - name: Install dependencies (backend)
+      run: npm ci
+      working-directory: backend
+
+    - name: Install dependencies (api-testing)
+      run: npm ci
+      working-directory: backend/api-testing
 
     - name: Setup K6 for load testing
       run: |
@@ -67,86 +74,76 @@ jobs:
         redis-cli -h localhost -p 6379 ping
 
     - name: Run database migrations
-      run: |
-        cd ..
-        npm run prisma:migrate
+      run: npm run prisma:migrate
+      working-directory: backend
       env:
         DATABASE_URL: postgresql://test:test@localhost:5432/nepa_test
 
     - name: Start API server
-      run: |
-        npm run dev &
-        sleep 30
+      run: npm run dev &
+      working-directory: backend
       env:
         DATABASE_URL: postgresql://test:test@localhost:5432/nepa_test
         REDIS_URL: redis://localhost:6379
 
     - name: Run unit tests
-      run: |
-        cd api-testing
-        npm run test:unit
+      run: npm run test:unit
+      working-directory: backend/api-testing
       env:
         API_BASE_URL: http://localhost:3000
         DATABASE_URL: postgresql://test:test@localhost:5432/nepa_test
 
     - name: Run integration tests
-      run: |
-        cd api-testing
-        npm run test:integration
+      run: npm run test:integration
+      working-directory: backend/api-testing
       env:
         API_BASE_URL: http://localhost:3000
         DATABASE_URL: postgresql://test:test@localhost:5432/nepa_test
 
     - name: Run security tests
-      run: |
-        cd api-testing
-        npm run test:security
+      run: npm run test:security
+      working-directory: backend/api-testing
       env:
         API_BASE_URL: http://localhost:3000
         DATABASE_URL: postgresql://test:test@localhost:5432/nepa_test
 
     - name: Run contract tests
-      run: |
-        cd api-testing
-        npm run test:contract
+      run: npm run test:contract
+      working-directory: backend/api-testing
       env:
         API_BASE_URL: http://localhost:3000
         DATABASE_URL: postgresql://test:test@localhost:5432/nepa_test
 
     - name: Run performance tests
-      run: |
-        cd api-testing
-        npm run test:performance
+      run: npm run test:performance
+      working-directory: backend/api-testing
       env:
         API_BASE_URL: http://localhost:3000
         DATABASE_URL: postgresql://test:test@localhost:5432/nepa_test
 
     - name: Run load tests
-      run: |
-        cd api-testing
-        npm run test:load
+      run: npm run test:load
+      working-directory: backend/api-testing
       env:
         API_BASE_URL: http://localhost:3000
 
     - name: Run end-to-end tests
-      run: |
-        cd api-testing
-        npm run test:e2e
+      run: npm run test:e2e
+      working-directory: backend/api-testing
       env:
         API_BASE_URL: http://localhost:3000
         DATABASE_URL: postgresql://test:test@localhost:5432/nepa_test
 
     - name: Generate test report
-      run: |
-        cd api-testing
-        npm run test:generate-report
+      run: npm run test:generate-report
+      working-directory: backend/api-testing
 
     - name: Upload test reports
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-reports
-        path: api-testing/test-reports/
+        path: backend/api-testing/test-reports/
         retention-days: 30
 
     - name: Upload coverage reports
@@ -154,7 +151,7 @@ jobs:
       if: always()
       with:
         name: coverage-reports
-        path: api-testing/coverage/
+        path: backend/api-testing/coverage/
         retention-days: 30
 
     - name: Comment PR with test results
@@ -163,7 +160,7 @@ jobs:
       with:
         script: |
           const fs = require('fs');
-          const path = 'api-testing/test-reports';
+          const path = 'backend/api-testing/test-reports';
           
           if (fs.existsSync(path)) {
             const files = fs.readdirSync(path);
@@ -213,9 +210,9 @@ jobs:
 
     - name: Run security vulnerability scan
       run: |
-        cd api-testing
         npm audit --audit-level moderate
         npm run test:security-scan
+      working-directory: backend/api-testing
       env:
         API_BASE_URL: http://localhost:3000
 
@@ -224,5 +221,5 @@ jobs:
       if: always()
       with:
         name: security-scan-results
-        path: api-testing/security-reports/
+        path: backend/api-testing/security-reports/
         retention-days: 30
