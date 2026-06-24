@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
 import { getErrorReportingService } from '../services/ErrorReportingService';
 
 export interface ErrorState {
@@ -178,12 +178,14 @@ export const ErrorProvider: React.FC<ErrorProviderProps> = ({ children }) => {
 
     } catch (recoveryError) {
       console.error('Error recovery failed:', recoveryError);
+
+      const errorMessage = recoveryError instanceof Error ? recoveryError.message : String(recoveryError);
       
       // Add recovery error
       addError({
         message: 'Failed to recover from error. Please refresh the page.',
         severity: 'high',
-        context: { originalError: errorId, recoveryError: recoveryError.message }
+        context: { originalError: errorId, recoveryError: errorMessage }
       });
     } finally {
       dispatch({ type: 'SET_RECOVERING', payload: false });
